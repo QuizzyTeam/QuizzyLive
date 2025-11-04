@@ -60,10 +60,9 @@ class Settings(BaseSettings):
    
 
     # CORS origins
-    FRONTEND_ORIGINS: List[str] = [
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
+    FRONTEND_ORIGINS: list[str] = [
+        *[f"http://localhost:{p}" for p in range(5173, 5191)],
+        *[f"http://127.0.0.1:{p}" for p in range(5173, 5191)],
     ]
 
     @field_validator("FRONTEND_ORIGINS", mode="before")
