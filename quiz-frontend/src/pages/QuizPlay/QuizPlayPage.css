@@ -316,3 +316,126 @@
 .time-up-message {
   color: #f44336;
 }
+
+/* === Лідерборд для гравця === */
+
+.player-scoreboard-section {
+  margin-top: 2rem;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.8rem;
+  max-width: 700px;
+  width: 100%;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.3s ease;
+}
+
+.player-scoreboard-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #222;
+  text-align: left;
+}
+
+.player-scoreboard-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.player-scoreboard-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  border-bottom: 1px solid #eee;
+  transition: all 0.2s;
+}
+
+.player-scoreboard-item:nth-child(1) {
+  background: #fffde7;
+  font-weight: 600;
+}
+
+.player-scoreboard-item-me {
+  background: #e3f2fd;
+  border: 1px solid #1976d2;
+}
+
+.player-scoreboard-rank {
+  color: #1976d2;
+  font-weight: 700;
+  min-width: 40px;
+}
+
+.player-scoreboard-name {
+  flex: 1;
+  margin-left: 1rem;
+  text-align: left;
+  color: #333;
+}
+
+.player-scoreboard-score {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.player-scoreboard-empty {
+  margin-top: 1rem;
+  text-align: center;
+  color: #777;
+  font-style: italic;
+}
+
+/* Фінальний екран */
+
+.player-final-wrapper {
+  max-width: 800px;
+  width: 100%;
+  margin: 2rem auto 0 auto;
+  text-align: center;
+}
+
+.player-final-title {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #222;
+}
+
+.player-final-subtitle {
+  margin-bottom: 1.5rem;
+  color: #666;
+}
+
+.player-scoreboard-home-btn {
+  margin-top: 2rem;
+  padding: 0.85rem 1.8rem;
+  border-radius: 10px;
+  border: none;
+  background: #1976d2;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.player-scoreboard-home-btn:hover {
+  background: #1565c0;
+  transform: translateY(-2px);
+}
+
+/* На мобільних – трохи менше відступів */
+
+@media (max-width: 768px) {
+  .player-scoreboard-section {
+    padding: 1.4rem;
+    width: auto !important;  
+  }
+
+  .player-final-title {
+    font-size: 1.6rem;
+  }
+}

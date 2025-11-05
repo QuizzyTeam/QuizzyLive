@@ -35,7 +35,7 @@ class QuizRepository:
         return quiz_res.data, (q_res.data or [])
 
     def create_quiz(self, title: str, questions: List[dict]) -> str:
-        # ⬇️ ВАЖЛИВО: без .select()/.single() після insert
+        # ВАЖЛИВО: без .select()/.single() після insert
         quiz_ins = self.client.table("quizzes").insert({"title": title}).execute()
 
         # supabase-py v2 зазвичай повертає representation у data (список рядків)
@@ -65,7 +65,7 @@ class QuizRepository:
 
     def update_quiz(self, quiz_id: str, title: Optional[str], questions: Optional[List[dict]]) -> None:
         if title is not None:
-            # ⬇️ просто .execute(), без .select()
+            # просто .execute(), без .select()
             self.client.table("quizzes").update({"title": title}).eq("id", quiz_id).execute()
 
         if questions is not None:

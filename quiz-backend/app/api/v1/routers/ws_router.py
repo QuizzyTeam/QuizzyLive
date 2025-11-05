@@ -121,6 +121,9 @@ async def ws_endpoint(
 
             print(f"Поточний стан: phase={state.get('phase')}, qidx={qidx}")
 
+            # Тепер завжди віддаємо повний scoreboard для гравця (як і для хоста)
+            sb = await manager.scoreboard(r, roomCode)
+
             ss = ServerStateSync(
                 roomCode=roomCode,
                 phase=state.get("phase", "LOBBY"),
@@ -128,9 +131,7 @@ async def ws_endpoint(
                 startedAt=state.get("startedAt"),
                 durationMs=state.get("durationMs"),
                 question=question,
-                scoreboard=await manager.scoreboard(r, roomCode)
-                if state.get("phase") in ("REVEAL", "ENDED")
-                else None,
+                scoreboard=sb,
                 reveal=None,
                 playerId=player_id,
             )
