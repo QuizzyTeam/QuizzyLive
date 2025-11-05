@@ -40,3 +40,17 @@ alter table public.quizzes enable row level security;
 alter table public.questions enable row level security;
 
 -- Дозволити сервіс-ролі все (service role key обходить RLS). Для анонімного доступу додайте політики.
+
+-- Створення таблички для остаточних відповідей
+create table public.quiz_sessions (
+  id uuid primary key,
+  quiz_id uuid references public.quizzes(id) on delete set null,
+  room_code text not null,
+  created_at timestamptz not null,
+  ended_at timestamptz not null,
+  questions jsonb not null,
+  scoreboard jsonb not null
+);
+
+create index quiz_sessions_quiz_id_idx on public.quiz_sessions (quiz_id);
+create index quiz_sessions_created_at_idx on public.quiz_sessions (created_at);

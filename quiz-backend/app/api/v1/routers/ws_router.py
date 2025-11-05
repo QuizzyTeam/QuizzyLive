@@ -1,10 +1,9 @@
 import json
 import time
 import uuid
-import asyncio
 
+from app.services.quiz_session_service import QuizSessionService
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
-
 from app.core.redis_manager import get_redis
 from app.ws.room_manager import RoomManager
 from app.ws.schemas import (
@@ -319,6 +318,7 @@ async def ws_endpoint(
                 # Читаємо та оновлюємо дані сесії
                 session_raw = await r.get(session_key)
                 session_data = json.loads(session_raw) if session_raw else {}
+
                 session_id = session_data.get("sessionId") or str(uuid.uuid4())
                 quiz_id = session_data.get("quizId")
                 created_at_ms = session_data.get("createdAt") or int(time.time() * 1000)
@@ -329,6 +329,7 @@ async def ws_endpoint(
                 session_data["createdAt"] = created_at_ms
                 session_data["phase"] = "ENDED"
                 session_data["endedAt"] = ended_at_ms
+
                 await r.set(session_key, json.dumps(session_data))
 
                 questions = await manager.load_questions(r, roomCode)
@@ -347,8 +348,15 @@ async def ws_endpoint(
                 await r.set(archive_key, snapshot.model_dump_json())
                 await r.zadd("quiz:session:index", {session_id: ended_at_ms})
                 await r.sadd(f"quiz:room_sessions:{roomCode}", session_id)
-
                 print(f"Збережено архів сесії в {archive_key}")
+
+                # Додатково зберігаємо завершену сесію у Supabase
+                try:
+                    session_service = QuizSessionService()
+                    session_service.save_finished_session(snapshot.model_dump())
+                    print(f"Сесію {session_id} збережено в Supabase")
+                except Exception as e:
+                    print(f"Помилка збереження сесії в Supabase: {e}")
 
                 # Очищаємо оперативні дані кімнати
                 await manager.cleanup_room_data(r, roomCode)
