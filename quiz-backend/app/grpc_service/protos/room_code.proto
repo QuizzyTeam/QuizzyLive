@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package roomcode;
+
+// Сервіс для управління кодами кімнат вікторин
+service RoomCodeService {
+  // Створити новий унікальний код для вікторини
+  rpc GenerateRoomCode(GenerateRoomCodeRequest) returns (GenerateRoomCodeResponse);
+  
+  // Отримати quizId за кодом кімнати
+  rpc ResolveRoomCode(ResolveRoomCodeRequest) returns (ResolveRoomCodeResponse);
+  
+  // Видалити код кімнати (після завершення вікторини)
+  rpc DeleteRoomCode(DeleteRoomCodeRequest) returns (DeleteRoomCodeResponse);
+}
+
+// Запит на генерацію коду
+message GenerateRoomCodeRequest {
+  string quiz_id = 1;           // UUID вікторини з БД
+  int32 code_length = 2;        // Бажана довжина коду (за замовчуванням 6)
+  int32 ttl_seconds = 3;        // TTL в секундах (за замовчуванням 6 годин)
+}
+
+// Відповідь з згенерованим кодом
+message GenerateRoomCodeResponse {
+  string room_code = 1;         // Згенерований унікальний код
+  string quiz_id = 2;           // UUID вікторини
+  int64 expires_at = 3;         // Unix timestamp коли код закінчиться
+}
+
+// Запит на резолвінг коду
+message ResolveRoomCodeRequest {
+  string room_code = 1;         // Код кімнати для резолвінгу
+}
+
+// Відповідь з quiz_id
+message ResolveRoomCodeResponse {
+  bool found = 1;               // Чи знайдено код
+  string quiz_id = 2;           // UUID вікторини (якщо знайдено)
+  string error_message = 3;     // Повідомлення про помилку
+}
+
+// Запит на видалення коду
+message DeleteRoomCodeRequest {
+  string room_code = 1;         // Код кімнати для видалення
+}
+
+// Відповідь про видалення
+message DeleteRoomCodeResponse {
+  bool deleted = 1;             // Чи було видалено
+}

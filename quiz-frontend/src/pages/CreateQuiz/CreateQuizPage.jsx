@@ -7,7 +7,7 @@ function CreateQuizPage() {
   const navigate = useNavigate();
 
   // ------------------------------
-  // СТАН ФОРМИ (створення/редагування)
+  // СТАН ФОРМИ
   // ------------------------------
   const [quizTitle, setQuizTitle] = useState("");
   const [questions, setQuestions] = useState([
@@ -155,6 +155,27 @@ function CreateQuizPage() {
     }
   };
 
+  const startQuizWithCode = async (quizId) => {
+  setLoading(true);
+  setError("");
+  try {
+    // Викликаємо наш API-клієнт
+    const data = await quizApi.startRoom(quizId);
+    const roomCode = data.room_code;
+
+    console.log(`Згенеровано код: ${roomCode} для quiz_id: ${quizId}`);
+
+    // Переходимо до лобі
+    navigate(`/lobby/${roomCode}`);
+  } catch (e) {
+    setError(e.message || "Помилка створення кімнати");
+    alert("Не вдалося створити кімнату для вікторини");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   // ------------------------------
   // INIT
   // ------------------------------
@@ -163,7 +184,7 @@ function CreateQuizPage() {
   }, []);
 
   // ------------------------------
-  // ХЕНДЛЕРИ ДЛЯ ПИТАНЬ (локальна форма)
+  // ХЕНДЛЕРИ ДЛЯ ПИТАНЬ
   // ------------------------------
   const handleAddQuestion = () => {
     setQuestions((prev) => [
@@ -216,6 +237,7 @@ function CreateQuizPage() {
       <div className="logo" onClick={() => navigate("/")}>
         <span className="logo-text">QuizzyLive</span>
       </div>
+      
       {/* Ліва колонка: створення/редагування */}
       <div className="left-pane">
         <button className="cancel-btn" onClick={() => navigate("/")}>
@@ -321,7 +343,7 @@ function CreateQuizPage() {
                 <div className="archive-actions">
                   <button
                     className="start-btn"
-                    onClick={() => navigate(`/lobby/${q.id}`)}
+                    onClick={() => startQuizWithCode(q.id)}
                     title="Почати вікторину"
                   >
                     🎮 почати

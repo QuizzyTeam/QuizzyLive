@@ -6,20 +6,27 @@ import "./QuizLobbyPage.css";
 
 function QuizLobbyPage() {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams(); // Це roomCode
   const [quiz, setQuiz] = useState(null);
+  const [realQuizId, setRealQuizId] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [ws, setWs] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   const wsInitialized = useRef(false);
 
+  // 1. resolve roomCode → quizId
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
         setLoading(true);
-        const q = await quizApi.getById(id);
+
+        const resolved = await quizApi.resolveRoomCode(id);
+        const quizId = resolved.quiz_id;
+        setRealQuizId(quizId);
+
+        const q = await quizApi.getById(quizId);
         setQuiz(q);
       } catch (e) {
         setError(e.message || "Помилка завантаження вікторини");
@@ -30,9 +37,10 @@ function QuizLobbyPage() {
     fetchQuiz();
   }, [id]);
 
+  // 2. WebSocket створення сесії
   useEffect(() => {
-    if (!quiz || wsInitialized.current) return;
-    
+    if (!quiz || !realQuizId || wsInitialized.current) return;
+
     wsInitialized.current = true;
 
     const socket = createQuizSocket({
@@ -46,14 +54,14 @@ function QuizLobbyPage() {
             setParticipants(msg.scoreboard);
           }
         } else if (msg.type === "player_joined") {
-          setParticipants(prev => {
-            const exists = prev.find(p => p.name === msg.playerName);
+          setParticipants((prev) => {
+            const exists = prev.find((p) => p.name === msg.playerName);
             if (exists) return prev;
             return [...prev, { name: msg.playerName, score: 0 }];
           });
         } else if (msg.type === "player_left") {
-          setParticipants(prev => 
-            prev.filter(p => p.name !== msg.playerName)
+          setParticipants((prev) =>
+            prev.filter((p) => p.name !== msg.playerName)
           );
         }
       },
@@ -61,22 +69,20 @@ function QuizLobbyPage() {
 
     socket.onopen = () => {
       console.log("WebSocket відкрито (host)");
-      
-      // Формуємо questions згідно з бекенд схемою
+
       const questions = quiz.questions.map((q) => ({
         id: q.id,
         question_text: q.questionText || q.question_text,
         answers: q.answers,
-        correct_answer: q.correctAnswer !== undefined ? q.correctAnswer : q.correct_answer,
+        correct_answer:
+          q.correctAnswer !== undefined ? q.correctAnswer : q.correct_answer,
         position: q.position !== undefined ? q.position : 0,
       }));
-
-      console.log("Надсилаємо host:create_session з questions:", questions);
 
       socket.sendJson({
         type: "host:create_session",
         roomCode: id,
-        quizId: id,
+        quizId: realQuizId,
         questions: questions,
       });
     };
@@ -88,21 +94,23 @@ function QuizLobbyPage() {
     };
 
     setWs(socket);
-    
+
     return () => {
       if (socket.readyState === WebSocket.OPEN) {
         socket.close();
       }
       wsInitialized.current = false;
     };
-  }, [quiz, id]);
+  }, [quiz, realQuizId, id]);
 
+  // 3. Старт гри
   const handleStartQuiz = () => {
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       alert("WebSocket не підключено!");
       return;
     }
-    navigate(`/host-play/${id}`); 
+
+    navigate(`/host-play/${realQuizId}?room=${id}`);
   };
 
   const handleCancel = () => {
@@ -144,7 +152,7 @@ function QuizLobbyPage() {
           <div className="participants-box">
             <h3>Учасники ({participants.length}):</h3>
             {participants.length === 0 ? (
-              <p className="waiting-text">Очікуємо учасників...</p>
+              <p>Очікуємо учасників...</p>
             ) : (
               <ul className="participants-list">
                 {participants.map((p, i) => (
@@ -164,7 +172,7 @@ function QuizLobbyPage() {
           >
             Почати вікторину
           </button>
-          
+
           {ws?.readyState !== WebSocket.OPEN && !loading && (
             <p className="warning-text">Підключення до сервера...</p>
           )}
