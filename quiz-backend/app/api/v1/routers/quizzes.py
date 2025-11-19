@@ -1,9 +1,16 @@
+import json
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException, Depends, status
+from redis.asyncio import Redis
 from typing import Annotated
+
 from ....schemas.quiz_schemas import QuizCreateIn, QuizOut, QuizUpdateIn, QuizListItem
 from ....services.quiz_service import QuizService
 from ....repositories.quiz_repository import QuizRepository
 from ....core.supabase_client import get_supabase
+from ....core.redis_manager import get_redis
+from ....services.room_quiz_cache import fetch_room_quiz, store_room_quiz
 
 router = APIRouter(prefix="/quizzes", tags=["quizzes"])
 
@@ -19,9 +26,35 @@ ServiceDep = Annotated[QuizService, Depends(get_service)]
 async def list_quizzes(svc: ServiceDep):
     return svc.list_quizzes()
 
+def _is_uuid_like(value: str) -> bool:
+    try:
+        UUID(value)
+        return True
+    except (ValueError, TypeError):
+        return False
+
+
 @router.get("/{quiz_id}", response_model=QuizOut)
-async def get_quiz(quiz_id: str, svc: ServiceDep):
-    data = svc.get_quiz(quiz_id)
+async def get_quiz(quiz_id: str, svc: ServiceDep, redis: Redis = Depends(get_redis)):
+    data: dict | None = None
+
+    if _is_uuid_like(quiz_id):
+        data = svc.get_quiz(quiz_id)
+    else:
+        # 1) пробуємо знайти в Redis за roomCode
+        data = await fetch_room_quiz(redis, quiz_id)
+
+        # 2) fallback: якщо є лише meta, беремо справжній quiz_id і кешуємо
+        if not data:
+            meta_raw = await redis.get(f"quiz:session_meta:{quiz_id}")
+            if meta_raw:
+                meta = json.loads(meta_raw)
+                original_id = meta.get("quizId")
+                if original_id:
+                    data = svc.get_quiz(original_id)
+                    if data:
+                        await store_room_quiz(redis, quiz_id, data)
+
     if not data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quiz not found")
     return data

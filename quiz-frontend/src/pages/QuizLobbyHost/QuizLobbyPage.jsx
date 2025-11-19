@@ -1,129 +1,135 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { quizApi } from "../../api/quizApi";
+import { sessionApi } from "../../api/sessionApi";
 import { createQuizSocket } from "../../api/wsClient";
 import "./QuizLobbyPage.css";
 
 function QuizLobbyPage() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const [quiz, setQuiz] = useState(null);
+  const { id: roomCode } = useParams(); // Це roomCode (наприклад, 3JXPX)
+  
+  const [sessionData, setSessionData] = useState(null); // { quizId, quizTitle, status }
   const [participants, setParticipants] = useState([]);
   const [ws, setWs] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   
   const wsInitialized = useRef(false);
 
+  // 1. Завантаження даних сесії (без звернення до БД квізів на фронті)
   useEffect(() => {
-    const fetchQuiz = async () => {
+    const initLobby = async () => {
       try {
         setLoading(true);
-        const q = await quizApi.getById(id);
-        setQuiz(q);
+        // Отримуємо всю інфу про сесію (включаючи назву) з Redis через REST
+        const info = await sessionApi.getInfo(roomCode);
+        setSessionData(info);
       } catch (e) {
-        setError(e.message || "Помилка завантаження вікторини");
+        console.error(e);
+        setError("Сесію не знайдено або сталась помилка.");
+        setTimeout(() => navigate("/hostDashboard"), 3000);
       } finally {
         setLoading(false);
       }
     };
-    fetchQuiz();
-  }, [id]);
+    initLobby();
+  }, [roomCode, navigate]);
 
+  // 2. WebSocket
   useEffect(() => {
-    if (!quiz || wsInitialized.current) return;
+    if (!sessionData || wsInitialized.current) return;
     
     wsInitialized.current = true;
 
     const socket = createQuizSocket({
       role: "host",
-      roomCode: id,
+      roomCode: roomCode,
       onMessage: (msg) => {
-        console.log("host отримав:", msg);
-
         if (msg.type === "state_sync") {
-          if (msg.phase === "LOBBY" && msg.scoreboard) {
-            setParticipants(msg.scoreboard);
+          // Завжди оновлюємо список учасників з scoreboard, якщо він є
+          // Це важливо при перезавантаженні сторінки хоста
+          if (msg.phase === "LOBBY") {
+            if (msg.scoreboard && Array.isArray(msg.scoreboard)) {
+              setParticipants(msg.scoreboard);
+            } else {
+              // Якщо scoreboard порожній, встановлюємо порожній масив
+              setParticipants([]);
+            }
           }
         } else if (msg.type === "player_joined") {
           setParticipants(prev => {
-            const exists = prev.find(p => p.name === msg.playerName);
-            if (exists) return prev;
-            return [...prev, { name: msg.playerName, score: 0 }];
+            // Перевіряємо, чи гравець вже є в списку (за playerId або name)
+            const exists = prev.find(
+              p => (p.playerId && p.playerId === msg.playerId) || 
+                   (p.name === msg.playerName)
+            );
+            if (exists) {
+              console.log("Гравець вже в списку:", msg.playerName);
+              return prev;
+            }
+            console.log("Додаємо гравця:", msg.playerName);
+            return [...prev, { 
+              name: msg.playerName, 
+              playerId: msg.playerId,
+              score: 0 
+            }];
           });
         } else if (msg.type === "player_left") {
           setParticipants(prev => 
-            prev.filter(p => p.name !== msg.playerName)
+            prev.filter(p => 
+              p.name !== msg.playerName && 
+              (!msg.playerId || p.playerId !== msg.playerId)
+            )
           );
         }
       },
     });
 
     socket.onopen = () => {
-      console.log("WebSocket відкрито (host)");
-      
-      // Формуємо questions згідно з бекенд схемою
-      const questions = quiz.questions.map((q) => ({
-        id: q.id,
-        question_text: q.questionText || q.question_text,
-        answers: q.answers,
-        correct_answer: q.correctAnswer !== undefined ? q.correctAnswer : q.correct_answer,
-        position: q.position !== undefined ? q.position : 0,
-      }));
-
-      console.log("Надсилаємо host:create_session з questions:", questions);
-
+      console.log("WS Connected");
+      // Ініціалізуємо сесію. Питання НЕ передаємо, бекенд сам їх підтягне з БД по quizId
       socket.sendJson({
         type: "host:create_session",
-        roomCode: id,
-        quizId: id,
-        questions: questions,
+        roomCode: roomCode,
+        quizId: sessionData.quizId, 
+        questions: [] // Пустий масив - сигнал бекенду завантажити з БД
       });
     };
 
-    socket.onerror = (err) => console.error("WebSocket помилка:", err);
-    socket.onclose = () => {
-      console.warn("WebSocket закрито (host)");
-      wsInitialized.current = false;
-    };
-
+    socket.onerror = (err) => console.error("WS Error:", err);
+    socket.onclose = () => { wsInitialized.current = false; };
     setWs(socket);
     
     return () => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.close();
-      }
+      if (socket.readyState === WebSocket.OPEN) socket.close();
       wsInitialized.current = false;
     };
-  }, [quiz, id]);
+  }, [sessionData, roomCode]);
 
   const handleStartQuiz = () => {
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       alert("WebSocket не підключено!");
       return;
     }
-    navigate(`/host-play/${id}`); 
+    navigate(`/host-play/${roomCode}`); 
   };
 
   const handleCancel = () => {
-    if (ws?.readyState === WebSocket.OPEN) {
-      ws.close();
-    }
+    if (ws?.readyState === WebSocket.OPEN) ws.close();
     navigate("/hostDashboard");
   };
 
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(id);
-    alert(`Код вікторини скопійовано!`);
+    navigator.clipboard.writeText(roomCode);
+    alert(`Код скопійовано!`);
   };
 
   return (
     <div className="lobby-container">
       <div className="lobby-header">
-        <button className="cancel-btn" onClick={handleCancel}>
-          Назад
-        </button>
-        <h1>{quiz?.title || "Завантаження..."}</h1>
+        <button className="cancel-btn" onClick={handleCancel}>Назад</button>
+        {/* Відображаємо назву, яку повернув Redis */}
+        <h1>{sessionData?.quizTitle || "Завантаження..."}</h1>
       </div>
 
       {error ? (
@@ -132,13 +138,8 @@ function QuizLobbyPage() {
         <div className="lobby-content">
           <div className="lobby-code-box">
             <h2>Код для підключення:</h2>
-            <div className="code">{id}</div>
-            <button className="copy-btn" onClick={handleCopyCode}>
-              Скопіювати код
-            </button>
-            <p className="hint-text">
-              Передайте цей код учасникам для підключення до вікторини
-            </p>
+            <div className="code">{roomCode}</div>
+            <button className="copy-btn" onClick={handleCopyCode}>Скопіювати код</button>
           </div>
 
           <div className="participants-box">
@@ -164,10 +165,6 @@ function QuizLobbyPage() {
           >
             Почати вікторину
           </button>
-          
-          {ws?.readyState !== WebSocket.OPEN && !loading && (
-            <p className="warning-text">Підключення до сервера...</p>
-          )}
         </div>
       )}
     </div>

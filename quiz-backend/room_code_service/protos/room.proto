@@ -1,0 +1,16 @@
+// room-code-service/protos/room.proto
+syntax = "proto3";
+
+package room;
+
+service RoomCodeGenerator {
+  rpc GenerateCode (GenerateCodeRequest) returns (GenerateCodeResponse);
+}
+
+message GenerateCodeRequest {
+  int32 length = 1;
+}
+
+message GenerateCodeResponse {
+  string code = 1;
+}

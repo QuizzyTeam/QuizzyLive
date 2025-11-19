@@ -3,3 +3,7 @@ __pycache__/
 venv/
 .env/
 quiz-backend/app/__pycache__/main.cpython-313.pyc
+quiz-backend/app/protos/room_pb2_grpc.py
+quiz-backend/app/protos/room_pb2.py
+quiz-backend/room_code_service/room_pb2.py
+quiz-backend/room_code_service/room_pb2_grpc.py

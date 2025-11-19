@@ -319,6 +319,18 @@ function QuizPlayPage() {
             break;
           }
 
+          case "connection_closed": {
+            console.log("З'єднання закрито:", msg.message);
+            setConnectionStatus("error");
+            setPhase("ENDED");
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+            }
+            alert(msg.message || "Хост вийшов з кімнати. Вікторина скасована.");
+            setTimeout(() => navigate("/join"), 2000);
+            break;
+          }
+
           case "error": {
             console.error("Помилка від сервера:", msg.message);
             alert(`Помилка: ${msg.message}`);

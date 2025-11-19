@@ -30,6 +30,9 @@ class RoomManager:
     def k_score(self, room: str) -> str:
         return f"{REDIS_PREFIX}{room}:score"
 
+    def k_host_presence(self, room: str) -> str:
+        return f"{REDIS_PREFIX}{room}:host_presence"
+
     # --- підключення ---
 
     async def register(self, room: str, ws: WebSocket) -> None:

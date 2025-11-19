@@ -64,7 +64,6 @@ class ServerStateSync(BaseModel):
     question: dict | None = None
     scoreboard: list[dict] | None = None
     reveal: dict | None = None
-    # нове поле — ідентифікатор поточного гравця
     playerId: str | None = None
 
 
