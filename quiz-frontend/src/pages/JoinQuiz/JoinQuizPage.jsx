@@ -31,12 +31,12 @@ function JoinQuizPage() {
 
         <form onSubmit={handleJoin} className="join-form">
           <label>
-            Код вікторини (UUID):
+            Код вікторини:
             <input
               type="text"
               value={quizId}
               onChange={(e) => setQuizId(e.target.value)}
-              placeholder="Наприклад: be70d188-ad79-4cc0-907c-a2a4a3c2b65f"
+              placeholder="Наприклад: AS12DV"
               className="input-field"
             />
           </label>
