@@ -61,8 +61,19 @@
   margin-bottom: 25px;
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
 }
-.quiz-title-input::placeholder {
-  color: #777;
+
+/* ==== ПОЛЕ ОПИСУ ==== */
+.quiz-description-input {
+  width: 100%;
+  min-height: 90px;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 25px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 /* ==== Блок питання ==== */
@@ -78,30 +89,23 @@
   transform: scale(1.01);
 }
 
-/* ==== Заголовок питання ==== */
 .question-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
 }
-.question-header h3 {
-  margin: 0;
-  font-size: 1.15rem;
-}
+
 .remove-question-btn {
   background-color: #ff7675;
   border: none;
   border-radius: 8px;
   padding: 6px 12px;
   color: white;
-  font-weight: 500;
   cursor: pointer;
-  transition: 0.2s ease;
 }
 .remove-question-btn:hover {
   background-color: #ff4d4f;
-  transform: scale(1.05);
 }
 
 /* ==== Поле питання ==== */
@@ -115,9 +119,6 @@
   margin-bottom: 12px;
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.25);
 }
-.question-input::placeholder {
-  color: #666;
-}
 
 /* ==== Відповіді ==== */
 .answers-container {
@@ -125,6 +126,7 @@
   flex-direction: column;
   gap: 10px;
 }
+
 .answer-option {
   background-color: #5750d8;
   border-radius: 8px;
@@ -132,68 +134,53 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
-}
-.answer-input {
-  width: 70%;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 10px;
-  outline: none;
-  color: #333;
-}
-.answer-input::placeholder {
-  color: #666;
-}
-.answer-option label {
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: #666;
 }
 
-/* ==== Кнопки форми ==== */
+.answer-input {
+  width: 70%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+}
+
+/* ==== Кнопки ==== */
 .form-actions {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 20px;
 }
+
 .add-question-btn,
 .save-quiz-btn,
 .secondary-btn {
   padding: 12px;
   border: none;
   border-radius: 12px;
-  font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+  font-weight: 600;
+  transition: 0.2s ease;
 }
+
 .add-question-btn {
   background-color: #00cec9;
   color: white;
 }
 .add-question-btn:hover {
   background-color: #00b9b3;
-  transform: scale(1.05);
 }
+
 .save-quiz-btn {
   background-color: #38e0b9;
   color: white;
 }
 .save-quiz-btn:hover {
   background-color: #2dd0a9;
-  transform: scale(1.05);
 }
+
 .secondary-btn {
   background-color: #777;
   color: white;
-}
-.secondary-btn:hover {
-  background-color: #666;
-  transform: scale(1.05);
 }
 
 /* ==== Права панель ==== */
@@ -208,112 +195,100 @@
   min-width: 300px;
   margin-top: 10px;
 }
+
 .archive-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-}
-.archive-header h2 {
-  margin: 0;
-  font-size: 1.3rem;
-}
-.refresh-btn {
-  background: #00cec9;
-  border: none;
-  border-radius: 10px;
-  padding: 8px 12px;
-  color: white;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.2s ease;
-}
-.refresh-btn:hover {
-  background: #00b9b3;
-  transform: scale(1.05);
 }
 
 /* ==== Список архіву ==== */
 .archive-list {
   list-style: none;
   padding: 0;
-  margin: 0;
 }
+
 .archive-item {
   background-color: #4640bf;
   border-radius: 10px;
-  padding: 12px 14px;
+  padding: 12px;
   margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background 0.2s ease;
-}
-.archive-item:hover {
-  background-color: #5a50dd;
-}
-.archive-title {
-  font-weight: 600;
-}
-.archive-actions button {
-  border: none;
-  border-radius: 6px;
-  padding: 6px 10px;
-  cursor: pointer;
-  margin-left: 6px;
-  color: white;
-  font-weight: 500;
-  transition: 0.2s ease;
-}
-.edit-btn {
-  background-color: #00cec9;
-}
-.edit-btn:hover {
-  background-color: #00b9b3;
-  transform: scale(1.05);
-}
-.delete-btn {
-  background-color: #ff7675;
-}
-.delete-btn:hover {
-  background-color: #ff4d4f;
-  transform: scale(1.05);
 }
 
-/* ==== Повідомлення ==== */
-.error-box {
-  background: #ff5c5c;
-  color: #fff;
-  padding: 10px;
-  border-radius: 10px;
-  text-align: center;
-  margin-bottom: 10px;
-}
-.loading-box {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 10px;
-  border-radius: 10px;
-  text-align: center;
-  margin-bottom: 10px;
-}
-.archive-empty {
-  text-align: center;
-  font-style: italic;
-  opacity: 0.9;
+.archive-actions button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  margin-left: 6px;
 }
 
 .start-btn {
   background-color: #38e0b9;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 10px;
-  cursor: pointer;
-  margin-left: 6px;
-  color: white;
-  font-weight: 500;
-  transition: 0.2s ease;
 }
-.start-btn:hover {
-  background-color: #2dd0a9;
-  transform: scale(1.05);
+
+.edit-btn {
+  background-color: #00cec9;
+}
+
+.delete-btn {
+  background-color: #ff7675;
+}
+
+/* ==== НОВА КНОПКА ℹ ==== */
+.info-btn {
+  background-color: #6c5ce7;
+}
+.info-btn:hover {
+  background-color: #5548d6;
+}
+
+/* ==== МОДАЛЬНЕ ВІКНО ІНФОРМАЦІЇ ==== */
+.info-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(3px);
+  z-index: 999;
+}
+
+.info-modal {
+  background: #352fa1;
+  padding: 25px;
+  width: 420px;
+  border-radius: 20px;
+  color: #fff;
+  box-shadow: 0 12px 25px rgba(0,0,0,0.35);
+  animation: showModal 0.25s ease-out;
+}
+
+.modal-description {
+  background: #4640bf;
+  padding: 12px;
+  border-radius: 10px;
+  white-space: pre-wrap;
+}
+
+.close-modal-btn {
+  margin-top: 20px;
+  width: 100%;
+  background: #ff7675;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.close-modal-btn:hover {
+  background: #ff4d4f;
 }
