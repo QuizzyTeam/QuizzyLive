@@ -33,6 +33,20 @@ class QuizRepository:
             .execute()
         )
         return quiz_res.data, (q_res.data or [])
+    
+    def count_quiz_sessions(self, quiz_id: str) -> int:
+        """
+        Повертає кількість рядків у quiz_sessions для даного quiz_id.
+        Для простоти використовує вибірку і len(res.data).
+        При великих обсягах можна оптимізувати через RPC або head+count.
+        """
+        res = (
+            self.client.table("quiz_sessions")
+            .select("id")
+            .eq("quiz_id", quiz_id)
+            .execute()
+        )
+        return len(res.data or [])
 
     def create_quiz(self, title: str, description: str, questions: List[dict]) -> str:
         quiz_ins = (

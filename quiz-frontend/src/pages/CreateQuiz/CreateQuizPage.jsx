@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { quizApi } from "../../api/quizApi";
 import { sessionApi } from "../../api/sessionApi";
+import { getQuizInfo } from "../../api/graphqlQuizApi"; 
 import "./CreateQuizPage.css";
 
 function CreateQuizPage() {
@@ -21,7 +22,6 @@ function CreateQuizPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Info modal
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [selectedQuizInfo, setSelectedQuizInfo] = useState(null);
 
@@ -192,13 +192,13 @@ function CreateQuizPage() {
     });
 
   // ============================
-  // ВІКНО ІНФОРМАЦІЇ ПРО ВІКТОРИНУ
+  // ВІКНО ІНФОРМАЦІЇ ПРО ВІКТОРИНУ (GraphQL)
   // ============================
 
   const openInfoModal = async (quizId) => {
     setLoading(true);
     try {
-      const data = await quizApi.getById(quizId);
+      const data = await getQuizInfo(quizId); // <-- GraphQL замість REST
       setSelectedQuizInfo(data);
       setInfoModalOpen(true);
     } catch (err) {
@@ -232,7 +232,6 @@ function CreateQuizPage() {
             className="quiz-title-input"
           />
 
-          {/* ОПИС */}
           <textarea
             placeholder="Опис вікторини"
             value={quizDescription}
@@ -240,7 +239,6 @@ function CreateQuizPage() {
             className="quiz-description-input"
           />
 
-          {/* ПИТАННЯ */}
           {questions.map((q, qIndex) => (
             <div key={qIndex} className="question-block">
               <div className="question-header">
@@ -323,7 +321,7 @@ function CreateQuizPage() {
         )}
       </div>
 
-      {/* ================= МОДАЛЬНЕ ВІКНО ІНФОРМАЦІЇ ================= */}
+      {/* ================= МОДАЛЬНЕ ВІКНО GRAPHQL ================= */}
       {infoModalOpen && selectedQuizInfo && (
         <div className="info-modal-backdrop" onClick={() => setInfoModalOpen(false)}>
           <div className="info-modal" onClick={(e) => e.stopPropagation()}>
@@ -331,12 +329,12 @@ function CreateQuizPage() {
 
             <p><strong>Дата створення:</strong> {new Date(selectedQuizInfo.createdAt).toLocaleString()}</p>
             <p><strong>Дата оновлення:</strong> {new Date(selectedQuizInfo.updatedAt).toLocaleString()}</p>
-            <p><strong>Кількість питань:</strong> {selectedQuizInfo.questions?.length}</p>
+            <p><strong>Кількість питань:</strong> {selectedQuizInfo.questionCount}</p>
 
             <p><strong>Опис:</strong></p>
             <p className="modal-description">{selectedQuizInfo.description || "—"}</p>
 
-            <p><strong>Рейтинг:</strong> {selectedQuizInfo.rating || 0}</p>
+            <p><strong>Рейтинг:</strong> {selectedQuizInfo.rating}</p>
 
             <button className="close-modal-btn" onClick={() => setInfoModalOpen(false)}>
               Закрити

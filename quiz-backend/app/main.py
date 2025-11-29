@@ -4,6 +4,7 @@ from .core.cors import setup_cors
 from .api.v1.routers import quizzes as quizzes_router
 from .api.v1.routers import ws_router
 from .api.v1.routers import sessions as sessions_router 
+from app.graphql.router import router as graphql_router
 
 app = FastAPI(title=settings.APP_NAME)
 setup_cors(app)
@@ -11,6 +12,7 @@ setup_cors(app)
 app.include_router(quizzes_router.router, prefix=settings.API_V1_PREFIX)
 app.include_router(sessions_router.router, prefix=settings.API_V1_PREFIX)
 app.include_router(ws_router.ws_router)
+app.include_router(graphql_router, prefix="/api/v1")
 
 @app.get("/healthz")
 async def healthz():

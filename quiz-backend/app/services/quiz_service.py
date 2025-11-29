@@ -23,12 +23,21 @@ class QuizService:
         if not res:
             return None
         quiz, questions = res
+
+        # question count
+        q_count = len(questions or [])
+
+        # rating = number of sessions for this quiz
+        rating = self.repo.count_quiz_sessions(quiz_id)
+
         return {
             "id": quiz["id"],
             "title": quiz["title"],
-            "description": quiz["description"],   
+            "description": quiz.get("description", ""),
             "createdAt": to_iso(quiz["created_at"]),
             "updatedAt": to_iso(quiz["updated_at"]),
+            "questionCount": q_count,     
+            "rating": rating,             
             "questions": [
                 {
                     "id": q["id"],
@@ -40,6 +49,7 @@ class QuizService:
                 for q in questions
             ],
         }
+
 
     def create_quiz(self, title: str, description: str, questions: List[dict]) -> str:
         return self.repo.create_quiz(title, description, questions)
