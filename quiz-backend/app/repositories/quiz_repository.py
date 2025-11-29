@@ -8,7 +8,7 @@ class QuizRepository:
     def list_quizzes(self) -> List[dict]:
         res = (
             self.client.table("quizzes")
-            .select("id,title,updated_at")
+            .select("id,title,description,updated_at")   
             .order("updated_at", desc=True)
             .execute()
         )
@@ -17,7 +17,7 @@ class QuizRepository:
     def get_quiz_with_questions(self, quiz_id: str) -> Optional[Tuple[dict, List[dict]]]:
         quiz_res = (
             self.client.table("quizzes")
-            .select("*")
+            .select("*")  
             .eq("id", quiz_id)
             .single()
             .execute()
@@ -34,19 +34,19 @@ class QuizRepository:
         )
         return quiz_res.data, (q_res.data or [])
 
-    def create_quiz(self, title: str, questions: List[dict]) -> str:
-        # ВАЖЛИВО: без .select()/.single() після insert
-        quiz_ins = self.client.table("quizzes").insert({"title": title}).execute()
+    def create_quiz(self, title: str, description: str, questions: List[dict]) -> str:
+        quiz_ins = (
+            self.client
+            .table("quizzes")
+            .insert({"title": title, "description": description})  
+            .execute()
+        )
 
-        # supabase-py v2 зазвичай повертає representation у data (список рядків)
         if not quiz_ins.data or not isinstance(quiz_ins.data, list) or "id" not in quiz_ins.data[0]:
-            # fallback: ще раз прочитати щойно створений запис (малоймовірно знадобиться)
-            # але краще одразу підняти явну помилку:
             raise RuntimeError("Insert quizzes failed: no returned id")
 
         quiz_id = quiz_ins.data[0]["id"]
 
-        # масове додавання питань
         rows = []
         for idx, q in enumerate(questions):
             rows.append(
@@ -63,14 +63,19 @@ class QuizRepository:
 
         return quiz_id
 
-    def update_quiz(self, quiz_id: str, title: Optional[str], questions: Optional[List[dict]]) -> None:
+    def update_quiz(self, quiz_id: str, title: Optional[str], description: Optional[str], questions: Optional[List[dict]]) -> None:
+        update_data = {}
         if title is not None:
-            # просто .execute(), без .select()
-            self.client.table("quizzes").update({"title": title}).eq("id", quiz_id).execute()
+            update_data["title"] = title
+        if description is not None:
+            update_data["description"] = description  
+
+        if update_data:
+            self.client.table("quizzes").update(update_data).eq("id", quiz_id).execute()
 
         if questions is not None:
-            # Проста стратегія: видалити всі питання та вставити нові
             self.client.table("questions").delete().eq("quiz_id", quiz_id).execute()
+
             rows = []
             for idx, q in enumerate(questions):
                 rows.append(

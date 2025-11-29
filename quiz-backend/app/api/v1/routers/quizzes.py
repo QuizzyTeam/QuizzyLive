@@ -61,23 +61,30 @@ async def get_quiz(quiz_id: str, svc: ServiceDep, redis: Redis = Depends(get_red
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_quiz(payload: QuizCreateIn, svc: ServiceDep):
-    quiz_id = svc.create_quiz(payload.title, [q.model_dump() for q in payload.questions])
+    quiz_id = svc.create_quiz(
+        payload.title,
+        payload.description,          
+        [q.model_dump() for q in payload.questions]
+    )
     return {"id": quiz_id}
+
 
 @router.put("/{quiz_id}")
 async def update_quiz(quiz_id: str, payload: QuizUpdateIn, svc: ServiceDep):
-    # Якщо ні title, ні questions — вважати поганим запитом
-    if payload.title is None and payload.questions is None:
+    if payload.title is None and payload.description is None and payload.questions is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nothing to update")
-    # Переконатися, що вікторина існує
+
     if not svc.get_quiz(quiz_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quiz not found")
+
     svc.update_quiz(
         quiz_id,
         payload.title,
+        payload.description,    
         [q.model_dump() for q in payload.questions] if payload.questions is not None else None,
     )
     return {"status": "ok"}
+
 
 @router.delete("/{quiz_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_quiz(quiz_id: str, svc: ServiceDep):

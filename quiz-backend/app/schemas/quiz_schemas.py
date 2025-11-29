@@ -3,15 +3,17 @@ from pydantic import BaseModel, Field, conlist, field_validator
 
 class QuestionIn(BaseModel):
     questionText: str = Field(..., min_length=1)
-    answers: Annotated[list[str], Field(min_length=4, max_length=4)]  # рівно 4
+    answers: Annotated[list[str], Field(min_length=4, max_length=4)]
     correctAnswer: int = Field(..., ge=0, le=3)
 
 class QuizCreateIn(BaseModel):
     title: str = Field(..., min_length=1)
+    description: str = Field("", min_length=0)   
     questions: List[QuestionIn]
 
 class QuizUpdateIn(BaseModel):
     title: Optional[str] = Field(None, min_length=1)
+    description: Optional[str] = None          
     questions: Optional[List[QuestionIn]] = None
 
     @field_validator("questions")
@@ -29,6 +31,7 @@ class QuestionOut(BaseModel):
 class QuizOut(BaseModel):
     id: str
     title: str
+    description: str               
     questions: List[QuestionOut]
     createdAt: str
     updatedAt: str
@@ -36,4 +39,5 @@ class QuizOut(BaseModel):
 class QuizListItem(BaseModel):
     id: str
     title: str
+    description: str                
     updatedAt: str

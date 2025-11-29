@@ -12,6 +12,7 @@ class QuizService:
             {
                 "id": i["id"],
                 "title": i["title"],
+                "description": i["description"],   
                 "updatedAt": to_iso(i["updated_at"]),
             }
             for i in items
@@ -25,6 +26,7 @@ class QuizService:
         return {
             "id": quiz["id"],
             "title": quiz["title"],
+            "description": quiz["description"],   
             "createdAt": to_iso(quiz["created_at"]),
             "updatedAt": to_iso(quiz["updated_at"]),
             "questions": [
@@ -39,11 +41,11 @@ class QuizService:
             ],
         }
 
-    def create_quiz(self, title: str, questions: List[dict]) -> str:
-        return self.repo.create_quiz(title, questions)
+    def create_quiz(self, title: str, description: str, questions: List[dict]) -> str:
+        return self.repo.create_quiz(title, description, questions)
 
-    def update_quiz(self, quiz_id: str, title: Optional[str], questions: Optional[List[dict]]) -> None:
-        self.repo.update_quiz(quiz_id, title, questions)
+    def update_quiz(self, quiz_id: str, title: Optional[str], description: Optional[str], questions: Optional[List[dict]]) -> None:
+        self.repo.update_quiz(quiz_id, title, description, questions)
 
     def delete_quiz(self, quiz_id: str) -> None:
         self.repo.delete_quiz(quiz_id)
