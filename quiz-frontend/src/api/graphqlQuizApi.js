@@ -1,11 +1,10 @@
 // src/api/graphqlQuizApi.js
-
 import { graphqlRequest } from "./graphqlClient";
 
 export async function getQuizInfo(quizId) {
   const query = `
-    query GetQuiz($id: String!) {
-      quiz(id: $id) {
+    query GetQuizInfo($id: String!) {
+      quizInfo(id: $id) {
         id
         title
         description
@@ -20,5 +19,5 @@ export async function getQuizInfo(quizId) {
   const variables = { id: quizId };
 
   const data = await graphqlRequest(query, variables);
-  return data.quiz;
+  return data.quizInfo;
 }

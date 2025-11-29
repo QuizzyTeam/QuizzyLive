@@ -1,33 +1,17 @@
-# app/graphql/schema.py
 import strawberry
-from typing import Optional, List
+from typing import Optional
 
-from .types import QuizShort, QuizFull
-from .resolvers import (
-    resolve_quiz,
-    resolve_quiz_info,
-    resolve_quizzes,
-    resolve_create_quiz,
-    resolve_delete_quiz,
-)
+from .types import QuizInfoType
+from .resolvers import resolve_quiz_info
 
 @strawberry.type
 class Query:
-    quizzes: List[QuizShort] = strawberry.field(resolver=resolve_quizzes)
-
-    quiz: Optional[QuizFull] = strawberry.field(
-        resolver=resolve_quiz,
-        description="Get quiz with questions"
-    )
-
-    quizInfo: Optional[QuizFull] = strawberry.field(
+    """
+    Query для інформації про вікторину (інфо-модалка).
+    """
+    quizInfo: Optional[QuizInfoType] = strawberry.field(
         resolver=resolve_quiz_info,
-        description="Get quiz info (title, dates, questionCount, description, rating)"
+        description="Отримати інформацію про вікторину для модалки"
     )
 
-@strawberry.type
-class Mutation:
-    createQuiz: str = strawberry.field(resolver=resolve_create_quiz)
-    deleteQuiz: bool = strawberry.field(resolver=resolve_delete_quiz)
-
-schema = strawberry.Schema(query=Query, mutation=Mutation)
+schema = strawberry.Schema(query=Query)
