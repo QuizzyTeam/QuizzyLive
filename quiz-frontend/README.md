@@ -1,3 +1,2 @@
-cd quiz-backend
-.\.venv\Scripts\Activate
-uvicorn app.main:app --reload
+cd quiz-frontend
+npm run dev
