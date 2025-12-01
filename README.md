@@ -12,7 +12,7 @@
   - [Player Waiting Room](#5-player-waiting-room-lobby-)
   - [Active Game Interface](#6-active-game-interface-question-view-)
   - [Game Over Screen](#7-game-over-screen-results-)
-- [Installation & Setup](#-installation--setup)
+- [Setup](#-installation--setup)
 - [Project Installation & Running](#project-installation--running)
 - [Architecture & Tech Stack](#architecture--tech-stack)
 
@@ -182,7 +182,7 @@ Review the **Final leaderboard** to announce the winner. When finished, click **
 ---
 
 
-## 🚀 Installation & Setup
+## 🚀 Setup
 
 Before running the project, you need to configure the environment variables for both the backend and frontend to ensure proper connection to the database and services.
 
