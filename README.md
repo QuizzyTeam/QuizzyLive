@@ -12,7 +12,7 @@
   - [Player Waiting Room](#5-player-waiting-room-lobby-)
   - [Active Game Interface](#6-active-game-interface-question-view-)
   - [Game Over Screen](#7-game-over-screen-results-)
-- [Project setup](#setup)
+- [Project setup](#-setup)
 - [Project Installation & Running](#project-installation--running)
 - [Architecture & Tech Stack](#architecture--tech-stack)
 
