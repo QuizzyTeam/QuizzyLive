@@ -15,6 +15,7 @@
 - [Project setup](#-setup)
 - [Project Installation & Running](#project-installation--running)
 - [Architecture & Tech Stack](#architecture--tech-stack)
+- - [DB Creation (Supabase)](#db-creation-supabase)
 
 ---
 
@@ -318,6 +319,90 @@ After launching the frontend, the application will be available at `http://local
 ---
 
 * To stop uvicorn, press `Ctrl+C` in the terminal where it is running.
+
+---
+## DB Creation (Supabase)
+
+This section describes the database schema setup for the quiz application using Supabase PostgreSQL.
+
+### Schema Overview
+
+The database consists of three main tables:
+- **quizzes** - stores quiz metadata
+- **questions** - stores questions with 4 answers each
+- **quiz_sessions** - stores game session history and results
+
+### SQL Setup
+
+Run the following SQL in your Supabase SQL Editor to create all necessary tables, indexes, and triggers:
+
+```sql
+-- Create quizzes table
+create table if not exists public.quizzes (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- Trigger for auto-updating updated_at field
+create or replace function public.set_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists set_quizzes_updated_at on public.quizzes;
+create trigger set_quizzes_updated_at
+before update on public.quizzes
+for each row execute function public.set_updated_at();
+
+-- Questions table (4 answers + correct answer index)
+create table if not exists public.questions (
+  id uuid primary key default gen_random_uuid(),
+  quiz_id uuid not null references public.quizzes(id) on delete cascade,
+  question_text text not null,
+  answers jsonb not null check (
+    jsonb_typeof(answers) = 'array' and jsonb_array_length(answers) = 4
+  ),
+  correct_answer smallint not null check (correct_answer between 0 and 3),
+  position int not null default 0
+);
+
+create index if not exists idx_questions_quiz on public.questions(quiz_id);
+create index if not exists idx_questions_position on public.questions(position);
+
+-- Enable Row Level Security (configure policies for production)
+alter table public.quizzes enable row level security;
+alter table public.questions enable row level security;
+
+-- Note: Service role key bypasses RLS. Add policies for anonymous/authenticated access as needed.
+
+-- Quiz sessions table for storing game state and results (added 05.11.2025)
+create table public.quiz_sessions (
+  id uuid primary key,
+  quiz_id uuid references public.quizzes(id) on delete set null,
+  room_code text not null,
+  created_at timestamptz not null,
+  ended_at timestamptz not null,
+  questions jsonb not null,
+  scoreboard jsonb not null
+);
+
+create index quiz_sessions_quiz_id_idx on public.quiz_sessions (quiz_id);
+create index quiz_sessions_created_at_idx on public.quiz_sessions (created_at);
+```
+
+### Key Features
+
+- **Automatic timestamps**: The `updated_at` field updates automatically on record changes
+- **Data validation**: Questions must have exactly 4 answers, correct answer index must be 0-3
+- **Cascading deletes**: Deleting a quiz removes all associated questions
+- **Optimized queries**: Indexes on foreign keys and frequently queried fields
+- **Session history**: Complete game sessions stored with questions and scoreboards
+
 
 ---
 
