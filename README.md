@@ -15,7 +15,7 @@
 - [Project setup](#-setup)
 - [Project Installation & Running](#project-installation--running)
 - [Architecture & Tech Stack](#architecture--tech-stack)
-- - [DB Creation (Supabase)](#db-creation-supabase)
+- [DB Creation (Supabase)](#db-creation-supabase)
 
 ---
 
